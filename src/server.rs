@@ -100,6 +100,8 @@ pub trait Service {
     fn should_continue(&self, _: &IncomingRequest) -> StatusCode {
         StatusCode::CONTINUE
     }
+
+    fn wants_stop(&self) -> bool { false }
 }
 
 impl<F, Body, Err> Service for F
@@ -194,6 +196,10 @@ impl<'a> Server<'a> {
         for conn in self.incoming {
             let app = service.clone();
             serve(conn, app).ok();
+
+            if service.wants_stop() {
+                break;
+            }
         }
         Ok(())
     }
